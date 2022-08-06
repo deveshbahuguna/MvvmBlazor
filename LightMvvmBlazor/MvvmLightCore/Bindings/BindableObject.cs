@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace MvvmLightCore.Binder
 {
-    internal class BindableObject
+    public class BindableObject
     {
-        public INotifyPropertyChanged ViewModel { get; set; }
+        public WeakReference<INotifyPropertyChanged>? ViewModel { get; set; }
         public PropertyInfo Property { get; set; }    
     }
 }
