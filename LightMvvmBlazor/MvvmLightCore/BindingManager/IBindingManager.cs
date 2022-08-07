@@ -8,7 +8,7 @@ namespace MvvmLightCore.Binder
         void AddBinding(BindableObject bindableObject);
         bool ContainsBinding(BindableObject bindableObject);
         void RemoveBinding(BindableObject bindableObject);
-        PropertyInfo GetBindableProperty(PropertyInfo propertyInfo);
+        PropertyInfo? GetBindableProperty(BindableObject propertyInfo);
 
     }
 }

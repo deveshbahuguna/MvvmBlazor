@@ -10,46 +10,91 @@ namespace MvvmLightCore.Binder
 {
     internal class BindingManager : IBindingManager
     {
-        private readonly Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>> propVmMapping;
-        private readonly Dictionary<int, bool> vmExistMapping;
+        /// <summary>
+        /// Mapping of VM with object id and object VM with corresponding property.
+        /// </summary>
+        private readonly Dictionary<int, Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>> propVmMapping;
         public BindingManager()
         {
-            propVmMapping = new Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>();
-            vmExistMapping = new Dictionary<int, bool>();
+            propVmMapping = new Dictionary<int, Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>>();
         }
 
         public void AddBinding(BindableObject bindableObject)
         {
-            if (bindableObject.ViewModel != null && !propVmMapping.ContainsKey(bindableObject.ViewModel))
+            if (bindableObject.ViewModel != null && bindableObject.Property != null)
             {
-                propVmMapping.Add(bindableObject.ViewModel, new HashSet<PropertyInfo>());
+                if (!propVmMapping.ContainsKey(bindableObject.GetHashCode()))
+                {
+                    propVmMapping.Add(bindableObject.GetHashCode(), new Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>());
+                    propVmMapping[bindableObject.ViewModel.GetHashCode()].Add(bindableObject.ViewModel, new HashSet<PropertyInfo>());
+                    propVmMapping[bindableObject.ViewModel.GetHashCode()][bindableObject.ViewModel].Add(bindableObject.Property);
+                }
+                else
+                {
+                    //If prop and vm already exist
+                    if (CheckBindableObjectAlreadyExist(bindableObject))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        //Update the prop info in the view model.
+                        var vm = this.propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel];
+                        vm.Add(bindableObject.Property);
+                    }
+
+                }
             }
-            if (!propVmMapping[bindableObject.ViewModel].Contains(bindableObject.Property))
+        }
+
+        private bool CheckBindableObjectAlreadyExist(BindableObject bindableObject)
+        {
+            if (propVmMapping.ContainsKey(bindableObject.GetHashcode) && bindableObject.ViewModel != null && bindableObject.Property != null)
             {
-                propVmMapping[bindableObject.ViewModel].Add(bindableObject.Property);
+                return propVmMapping[bindableObject.GetHashcode].ContainsKey(bindableObject.ViewModel)
+                        &&
+                       propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel].Contains(bindableObject.Property);
             }
+            return false;
         }
 
         public bool ContainsBinding(BindableObject bindableObject)
         {
             if (bindableObject != null)
             {
-                return propVmMapping.ContainsKey(bindableObject);
+                return CheckBindableObjectAlreadyExist(bindableObject);
             }
             return false;
         }
 
         public void RemoveBinding(BindableObject bindableObject)
         {
-            if (bindableObject.ViewModel != null && propVmMapping.ContainsKey(bindableObject.ViewModel)
-                && propVmMapping[bindableObject.ViewModel].ContainsKey(bindableObject.Property))
+            //Will do later.
+            //if (bindableObject.ViewModel != null && propVmMapping.ContainsKey(bindableObject.ViewModel)
+            //    && propVmMapping[bindableObject.ViewModel].ContainsKey(bindableObject.Property))
+            //{
+            //    propVmMapping[bindableObject.ViewModel].Remove(bindableObject.Property);
+            //    if (propVmMapping[bindableObject.ViewModel].Count() == 0)
+            //    {
+            //        propVmMapping.Remove(bindableObject.ViewModel);
+            //    }
+            //}
+        }
+
+        public PropertyInfo? GetBindableProperty(BindableObject bindableObject)
+        {
+            if (bindableObject.ViewModel != null && bindableObject.Property != null &&
+                propVmMapping.ContainsKey(bindableObject.GetHashcode) &&
+                propVmMapping[bindableObject.GetHashcode].ContainsKey(bindableObject.ViewModel) &&
+                propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel].Contains(bindableObject.Property)
+                )
             {
-                propVmMapping[bindableObject.ViewModel].Remove(bindableObject.Property);
-                if (propVmMapping[bindableObject.ViewModel].Count() == 0)
-                {
-                    propVmMapping.Remove(bindableObject.ViewModel);
-                }
+                PropertyInfo? property = null;
+                propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel].TryGetValue(bindableObject.Property,
+                    out property);
+                return property;
             }
+            throw new KeyNotFoundException($"Bindable object does not exist " + bindableObject.GetHashcode + "Property " + bindableObject.GetPropName);
         }
     }
 }
