@@ -1,12 +1,14 @@
 ﻿@page "/counter"
+@using MvvmLightCore.Binder
 @using SampleProject.ViewModel
+@using System.ComponentModel
 @inherits MvvmLightBlazorComponent.BlazorMvvmComponent
 <PageTitle>Counter</PageTitle>
 
 
 <h1>Counter</h1>
 
-<p role="status">Current count: @Bind(counterVM, x=>x.Counter).ToString()</p>
+<p role="status">Current count: @(Bind<CounterViewModel,int>(counterVM, x=>x.Counter))</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
@@ -16,10 +18,10 @@
 
     private void IncrementCount()
     {
-        currentCount++;
+        this.counterVM.Counter++;
     }
 
-    public Counter()
+    public Counter() : base(new MvvmLightCore.MvvmBinder(new BindingManager()))
     {
         counterVM = new CounterViewModel();
     }

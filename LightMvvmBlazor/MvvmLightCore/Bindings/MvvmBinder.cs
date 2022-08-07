@@ -27,8 +27,8 @@ namespace MvvmLightCore
             if (!this.bindingManager.ContainsBinding(new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel),bindableProperty)))
             {
                 BindableObject bindableObj = new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel), bindableProperty);
-                bindableObj.PropertyChanged -= this.ViewModelPropertyChanged;
-                bindableObj.PropertyChanged += this.ViewModelPropertyChanged;
+                viewmodel.PropertyChanged -= this.ViewModelPropertyChanged;
+                viewmodel.PropertyChanged += this.ViewModelPropertyChanged;
                 this.bindingManager.AddBinding(bindableObj);
             }
             return (TValue)bindableProperty.GetValue(viewmodel);

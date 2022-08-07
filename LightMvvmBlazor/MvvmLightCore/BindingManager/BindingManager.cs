@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MvvmLightCore.Binder
 {
-    internal class BindingManager : IBindingManager
+    public class BindingManager : IBindingManager
     {
         /// <summary>
         /// Mapping of VM with object id and object VM with corresponding property.
@@ -23,11 +23,11 @@ namespace MvvmLightCore.Binder
         {
             if (bindableObject.ViewModel != null && bindableObject.Property != null)
             {
-                if (!propVmMapping.ContainsKey(bindableObject.GetHashCode()))
+                if (!propVmMapping.ContainsKey(bindableObject.GetHashcode))
                 {
-                    propVmMapping.Add(bindableObject.GetHashCode(), new Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>());
-                    propVmMapping[bindableObject.ViewModel.GetHashCode()].Add(bindableObject.ViewModel, new HashSet<PropertyInfo>());
-                    propVmMapping[bindableObject.ViewModel.GetHashCode()][bindableObject.ViewModel].Add(bindableObject.Property);
+                    propVmMapping.Add(bindableObject.GetHashcode, new Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>());
+                    propVmMapping[bindableObject.GetHashcode].Add(bindableObject.ViewModel, new HashSet<PropertyInfo>());
+                    propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel].Add(bindableObject.Property);
                 }
                 else
                 {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MvvmLightCore.Binder
 {
-    public class BindableObject : INotifyPropertyChanged
+    public class BindableObject
     {
         public BindableObject(WeakReference<INotifyPropertyChanged>? viewModel, PropertyInfo? property)
         {
@@ -25,7 +25,8 @@ namespace MvvmLightCore.Binder
             {
                 if (this.ViewModel != null)
                 {
-                    return this.ViewModel.GetHashCode();
+                    INotifyPropertyChanged? vm;
+                    return this.ViewModel.TryGetTarget(out vm).GetHashCode();
                 }
                 return -1;
             }
@@ -41,6 +42,5 @@ namespace MvvmLightCore.Binder
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
