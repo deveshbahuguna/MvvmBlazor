@@ -19,7 +19,7 @@ namespace MvvmLightBlazorComponent
             this.mvvmBinder = mvvmBinder;
         }
 
-        protected TValue Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
+        protected TValue? Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue?>> bindingExpression) where TInput : INotifyPropertyChanged
         {
             this.mvvmBinder.ViewModelPropertyChanged -= PropertyChangedEventHandler;
             this.mvvmBinder.ViewModelPropertyChanged += PropertyChangedEventHandler;

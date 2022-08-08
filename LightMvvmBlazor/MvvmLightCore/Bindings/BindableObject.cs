@@ -8,16 +8,30 @@ using System.Threading.Tasks;
 
 namespace MvvmLightCore.Binder
 {
-    public class BindableObject
+    public class BindableObject : IBindableObject
     {
-        public BindableObject(WeakReference<INotifyPropertyChanged>? viewModel, PropertyInfo? property)
+        public BindableObject(WeakReference<INotifyPropertyChanged>? viewModel)
         {
             ViewModel = viewModel;
-            Property = property;
         }
 
         public WeakReference<INotifyPropertyChanged>? ViewModel { get; set; }
-        public PropertyInfo? Property { get; set; }
+        public HashSet<PropertyInfo?> Properties { get; set; } = new();
+
+        public bool CheckIfBindingKeyAreSame(IBindableObject toCheckObject)
+        {
+            if (toCheckObject.ViewModel != null && toCheckObject.ViewModel.TryGetTarget(out INotifyPropertyChanged? keyObject)
+             && this.ViewModel != null &&  this.ViewModel.TryGetTarget(out INotifyPropertyChanged? currentObjectVM))
+            {                
+                return keyObject.Equals(currentObjectVM);
+            }
+            return false;
+        }
+
+        public bool CheckIfBindingAlreadyExist(IBindableObject toCheckObject)
+        {
+            return CheckIfBindingKeyAreSame(toCheckObject) && this.Properties.Contains(toCheckObject.Properties.First());
+        }
 
         public int GetHashcode
         {
@@ -31,16 +45,5 @@ namespace MvvmLightCore.Binder
                 return -1;
             }
         }
-
-        public string GetPropName
-        {
-            get
-            {
-                if(this.Property != null)
-                    return this.Property.Name;
-                return string.Empty;
-            }
-        }
-
     }
 }

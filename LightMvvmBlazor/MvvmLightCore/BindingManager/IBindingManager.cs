@@ -5,10 +5,10 @@ namespace MvvmLightCore.Binder
 {
     public interface IBindingManager
     {
-        void AddBinding(BindableObject bindableObject);
-        bool ContainsBinding(BindableObject bindableObject);
-        void RemoveBinding(BindableObject bindableObject);
-        PropertyInfo? GetBindableProperty(BindableObject propertyInfo);
+        void AddBinding(IBindableObject bindableObject);
+        bool CheckIfBindingAlreadyExist(IBindableObject bindableObject);
+        void RemoveBinding(IBindableObject bindableObject);
+        PropertyInfo? GetBindableProperty(IBindableObject propertyInfo);
 
     }
 }

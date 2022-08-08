@@ -21,24 +21,25 @@ namespace MvvmLightCore
             this.bindingManager = bindingManager;
         }
 
-        public TValue Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
+        public TValue? Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
         {
             var bindableProperty = ParseBindingExpression(bindingExpression);
-            if (!this.bindingManager.ContainsBinding(new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel),bindableProperty)))
+            IBindableObject bindableObj = new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel));
+            bindableObj.Properties.Add(bindableProperty);
+            if (!this.bindingManager.CheckIfBindingAlreadyExist(bindableObj))
             {
-                BindableObject bindableObj = new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel), bindableProperty);
                 viewmodel.PropertyChanged -= this.ViewModelPropertyChanged;
                 viewmodel.PropertyChanged += this.ViewModelPropertyChanged;
                 this.bindingManager.AddBinding(bindableObj);
             }
-            return (TValue)bindableProperty.GetValue(viewmodel);
+            return (TValue)bindableProperty?.GetValue(viewmodel);
         }
 
-        private PropertyInfo ParseBindingExpression<TInput, TValue>(Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
+        private PropertyInfo? ParseBindingExpression<TInput, TValue>(Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
         {
             if (bindingExpression.NodeType == ExpressionType.Lambda && bindingExpression.Body is MemberExpression && (bindingExpression.Body as MemberExpression).Member is PropertyInfo)
             {
-                return (bindingExpression.Body as MemberExpression).Member as PropertyInfo;
+                return (bindingExpression?.Body as MemberExpression)?.Member as PropertyInfo;
             }
             throw new NotSupportedException();
         }

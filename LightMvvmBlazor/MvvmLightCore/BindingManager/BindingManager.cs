@@ -13,88 +13,72 @@ namespace MvvmLightCore.Binder
         /// <summary>
         /// Mapping of VM with object id and object VM with corresponding property.
         /// </summary>
-        private readonly Dictionary<int, Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>> propVmMapping;
+        private readonly Dictionary<int, List<IBindableObject>> propVmMapping;
         public BindingManager()
         {
-            propVmMapping = new Dictionary<int, Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>>();
+            propVmMapping = new Dictionary<int, List<IBindableObject>>();
         }
 
-        public void AddBinding(BindableObject bindableObject)
+        public void AddBinding(IBindableObject toFindBindObject)
         {
-            if (bindableObject.ViewModel != null && bindableObject.Property != null)
+            if (toFindBindObject.ViewModel != null && toFindBindObject.Properties.First() != null)
             {
-                if (!propVmMapping.ContainsKey(bindableObject.GetHashcode))
+                if (!propVmMapping.ContainsKey(toFindBindObject.GetHashcode))
                 {
-                    propVmMapping.Add(bindableObject.GetHashcode, new Dictionary<WeakReference<INotifyPropertyChanged>, HashSet<PropertyInfo>>());
-                    propVmMapping[bindableObject.GetHashcode].Add(bindableObject.ViewModel, new HashSet<PropertyInfo>());
-                    propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel].Add(bindableObject.Property);
+                    var IBindableObject = new BindableObject(toFindBindObject.ViewModel);
+                    propVmMapping.Add(toFindBindObject.GetHashcode, new List<IBindableObject>());
+                    IBindableObject.Properties.Add(toFindBindObject.Properties.First());
+                    propVmMapping[toFindBindObject.GetHashcode].Add(IBindableObject);
                 }
                 else
                 {
                     //If prop and vm already exist
-                    if (CheckBindableObjectAlreadyExist(bindableObject))
+                    if (CheckIfBindingAlreadyExist(toFindBindObject))
                     {
                         return;
                     }
                     else
                     {
                         //Update the prop info in the view model.
-                        var vm = this.propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel];
-                        vm.Add(bindableObject.Property);
+                        var vm = (from obj in  this.propVmMapping[toFindBindObject.GetHashcode] where obj.CheckIfBindingKeyAreSame(toFindBindObject) select obj).First();
+                        vm.Properties.Add(toFindBindObject.Properties.First());
                     }
 
                 }
             }
         }
 
-        private bool CheckBindableObjectAlreadyExist(BindableObject bindableObject)
+        public bool CheckIfBindingAlreadyExist(IBindableObject toFindBindObject)
         {
-            if (propVmMapping.ContainsKey(bindableObject.GetHashcode) && bindableObject.ViewModel != null && bindableObject.Property != null)
-            {
-                return propVmMapping[bindableObject.GetHashcode].ContainsKey(bindableObject.ViewModel)
-                        &&
-                       propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel].Contains(bindableObject.Property);
-            }
-            return false;
+            return this.propVmMapping.ContainsKey(toFindBindObject.GetHashcode) &&
+                                  this.propVmMapping[toFindBindObject.GetHashcode].Any(obj => obj.CheckIfBindingAlreadyExist(toFindBindObject));
         }
 
-        public bool ContainsBinding(BindableObject bindableObject)
+        public void RemoveBinding(IBindableObject IBindableObject)
         {
-            if (bindableObject != null)
-            {
-                return CheckBindableObjectAlreadyExist(bindableObject);
-            }
-            return false;
-        }
-
-        public void RemoveBinding(BindableObject bindableObject)
-        {
-            //Will do later.
-            //if (bindableObject.ViewModel != null && propVmMapping.ContainsKey(bindableObject.ViewModel)
-            //    && propVmMapping[bindableObject.ViewModel].ContainsKey(bindableObject.Property))
+            //todo:db Will do later.
+            //if (IBindableObject.ViewModel != null && propVmMapping.ContainsKey(IBindableObject.ViewModel)
+            //    && propVmMapping[IBindableObject.ViewModel].ContainsKey(IBindableObject.Property))
             //{
-            //    propVmMapping[bindableObject.ViewModel].Remove(bindableObject.Property);
-            //    if (propVmMapping[bindableObject.ViewModel].Count() == 0)
+            //    propVmMapping[IBindableObject.ViewModel].Remove(IBindableObject.Property);
+            //    if (propVmMapping[IBindableObject.ViewModel].Count() == 0)
             //    {
-            //        propVmMapping.Remove(bindableObject.ViewModel);
+            //        propVmMapping.Remove(IBindableObject.ViewModel);
             //    }
             //}
         }
 
-        public PropertyInfo? GetBindableProperty(BindableObject bindableObject)
+        public PropertyInfo? GetBindableProperty(IBindableObject IBindableObject)
         {
-            if (bindableObject.ViewModel != null && bindableObject.Property != null &&
-                propVmMapping.ContainsKey(bindableObject.GetHashcode) &&
-                propVmMapping[bindableObject.GetHashcode].ContainsKey(bindableObject.ViewModel) &&
-                propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel].Contains(bindableObject.Property)
-                )
+            if (CheckIfBindingAlreadyExist(IBindableObject))
             {
-                PropertyInfo? property = null;
-                propVmMapping[bindableObject.GetHashcode][bindableObject.ViewModel].TryGetValue(bindableObject.Property,
-                    out property);
-                return property;
+              var bindableObj =  (from ele in this.propVmMapping[IBindableObject.GetHashcode] where ele.CheckIfBindingKeyAreSame(IBindableObject) select ele).First();
+                if (bindableObj.Properties.TryGetValue(bindableObj.Properties.First(), out PropertyInfo? propertyInfo))
+                {
+                    return propertyInfo;
+                }
             }
-            throw new KeyNotFoundException($"Bindable object does not exist " + bindableObject.GetHashcode + "Property " + bindableObject.GetPropName);
+            throw new KeyNotFoundException($"Bindable object does not exist " + " Property " + IBindableObject?.Properties?.First()?.Name);
         }
     }
 }
