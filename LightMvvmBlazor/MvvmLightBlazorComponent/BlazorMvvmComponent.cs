@@ -12,12 +12,13 @@ namespace MvvmLightBlazorComponent
 {
     public abstract class BlazorMvvmComponent : ComponentBase
     {
-        private readonly IMvvmBinder mvvmBinder;
+        [Inject]
+        public IMvvmBinder mvvmBinder { get; set; }
 
-        public BlazorMvvmComponent(IMvvmBinder mvvmBinder)
-        {
-            this.mvvmBinder = mvvmBinder;
-        }
+        //public BlazorMvvmComponent()
+        //{
+        //    //this.mvvmBinder = mvvmBinder;
+        //}
 
         protected TValue? Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue?>> bindingExpression) where TInput : INotifyPropertyChanged
         {
