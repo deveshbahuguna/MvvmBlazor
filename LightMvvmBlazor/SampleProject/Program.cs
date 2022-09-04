@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMvvm();
+//Adding MVVM.
 builder.Services.AddViewModels();
 builder.Services.AddSingleton<WeatherForecastService>();
 
