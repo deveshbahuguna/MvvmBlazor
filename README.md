@@ -2,5 +2,5 @@
 
 <p>This is a simple MVVM library for Blazor.</p>
 
-<p>Documentation in progress </p>
+<p>Documentation in progress. </p>
 
