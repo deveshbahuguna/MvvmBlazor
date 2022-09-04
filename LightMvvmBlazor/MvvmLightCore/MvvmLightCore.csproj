@@ -4,6 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Authors>Devesh Bahuguna</Authors>
+    <Description>Two way binging framework library to support Mvvm </Description>
+    <Copyright>MIT</Copyright>
+    <RepositoryUrl>https://github.com/deveshbahuguna/LightMvvmBlazor</RepositoryUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
