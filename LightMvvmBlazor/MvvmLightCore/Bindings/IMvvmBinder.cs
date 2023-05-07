@@ -1,16 +1,15 @@
 ﻿using System.ComponentModel;
 using System.Linq.Expressions;
 
-namespace MvvmLightCore
+namespace MvvmLightCore.Bindings
 {
-    public interface IMvvmBinder
+    public interface IMvvmBinder : IAsyncDisposable, IDisposable
     {
         /// <summary>
         /// Event to update UI on property change. 
         /// </summary>
         event PropertyChangedEventHandler ViewModelPropertyChanged;
-
-
+        
         /// <summary>
         /// Method to bind any control to subscribe UI change via Notify property change.
         /// </summary>
@@ -19,11 +18,7 @@ namespace MvvmLightCore
         /// <param name="viewmodel"></param>
         /// <param name="bindingExpression"></param>
         /// <returns></returns>
-        TValue Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged;
-       
-        /// <summary>
-        /// To dispose off the VM.
-        /// </summary>
-        void Dispose();
+        TValue Bind<TInput, TValue>(INotifyPropertyChanged viewmodel,
+            Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged;
     }
 }

@@ -1,24 +1,30 @@
 ﻿using MvvmLightCore.Binder;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using MvvmLightCore.Bindings;
 
 namespace MvvmLightCore
 {
-    public class MvvmBinder : IDisposable, IMvvmBinder
+    public class MvvmBinder : IMvvmBinder
     {
-        private readonly IBindingManager bindingManager;
+        private readonly IBindingManager _bindingManager;
+        private readonly ILogger<MvvmBinder> _logger;
+        private bool _isDisposeInvoked = false;
+        private bool _isAsyncDisposeInvoked = false;
 
         public event PropertyChangedEventHandler? ViewModelPropertyChanged;
 
-        public MvvmBinder(IBindingManager bindingManager)
+        public MvvmBinder(IBindingManager bindingManager, ILogger<MvvmBinder> logger)
         {
-            this.bindingManager = bindingManager;
+            this._bindingManager = bindingManager;
+            _logger = logger;
+        }
+
+        ~MvvmBinder()
+        {
+            Dispose(true);
         }
 
         public TValue? Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
@@ -26,11 +32,11 @@ namespace MvvmLightCore
             var bindableProperty = ParseBindingExpression(bindingExpression);
             IBindableObject bindableObj = new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel));
             bindableObj.Properties.Add(bindableProperty);
-            if (!this.bindingManager.CheckIfBindingAlreadyExist(bindableObj))
+            if (!this._bindingManager.CheckIfBindingAlreadyExist(bindableObj))
             {
                 viewmodel.PropertyChanged -= this.ViewModelPropertyChanged;
                 viewmodel.PropertyChanged += this.ViewModelPropertyChanged;
-                this.bindingManager.AddBinding(bindableObj);
+                this._bindingManager.AddBinding(bindableObj);
             }
             return (TValue)bindableProperty?.GetValue(viewmodel);
         }
@@ -43,10 +49,48 @@ namespace MvvmLightCore
             }
             throw new NotSupportedException();
         }
+    
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            if (_isAsyncDisposeInvoked)
+                await ValueTask.CompletedTask;
+            _isAsyncDisposeInvoked = true;
+            //Dispose objects asynchronously thus after this call no need to reclear the managed objects.
+        }
+        
+        /// <summary>
+        /// This will cleanup any managed objects.
+        /// </summary>
+        /// <param name="isInvokedFromGCFinalizer"></param>
+        public virtual void Dispose(bool isInvokedFromGCFinalizer)
+        {
+            _logger.Log(LogLevel.Debug, $"Disposed invoked by {isInvokedFromGCFinalizer}");
+            if (_isDisposeInvoked)
+            {
+                return;
+            }
 
+            if (!isInvokedFromGCFinalizer)
+            {
+             //Free managed resources if any.
+            }
+            //Free unmanaged resources if any.
+            _isDisposeInvoked = true;
+            Dispose();
+        }
+        
         public void Dispose()
         {
+            Dispose(false);
+        }
 
+        public async ValueTask DisposeAsync()
+        {
+            _logger.Log(LogLevel.Debug, $"DisposedAsync invoked");
+            await DisposeAsyncCore();
+            // sending false as expecting that DisposeAsyncCore would already dispose all managed objects.
+            Dispose(true);
+            await ValueTask.CompletedTask;
         }
     }
 }
