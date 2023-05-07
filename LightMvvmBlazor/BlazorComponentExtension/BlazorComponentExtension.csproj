@@ -13,6 +13,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/deveshbahuguna/LightMvvmBlazor</RepositoryUrl>
     <PackageId>MvvmLightBlazor</PackageId>
+    <RootNamespace>MvvmLightBlazorComponent</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,5 +31,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.2" />
     <PackageReference Include="MvvmLightCore" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MvvmBindingLightCore\MvvmBindingLightCore.csproj" />
   </ItemGroup>
 </Project>

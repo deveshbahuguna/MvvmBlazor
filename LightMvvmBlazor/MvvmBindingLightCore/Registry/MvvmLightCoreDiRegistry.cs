@@ -5,15 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MvvmLightCore;
 using MvvmLightCore.Bindings;
 
-namespace MvvmLightCore.Registry
+namespace MvvmBindingLightCore.Registry
 {
     public static class MvvmLightCoreDiRegistry
     {
         public static void AddMvvm(this IServiceCollection serviceProvider)
         {
-            serviceProvider.AddTransient<IBindingManager, BindingManager>();
             serviceProvider.AddTransient<IMvvmBinder, MvvmBinder>();
         }
     }

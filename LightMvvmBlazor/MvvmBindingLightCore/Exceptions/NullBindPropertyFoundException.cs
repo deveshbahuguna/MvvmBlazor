@@ -4,9 +4,9 @@ namespace MvvmLightCore.Exceptions
 {
     public class NullBindPropertyFoundException : Exception
     {
-        private readonly IBindableObject _toAddBindingObj;
+        private readonly BindableObject _toAddBindingObj;
 
-        public NullBindPropertyFoundException(IBindableObject toAddBindingObj) : base(
+        public NullBindPropertyFoundException(BindableObject toAddBindingObj) : base(
             message: $"Property of Bindable object  is null")
 
         {

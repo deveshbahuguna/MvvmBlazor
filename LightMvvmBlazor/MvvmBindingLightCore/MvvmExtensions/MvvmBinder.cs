@@ -3,22 +3,24 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using MvvmLightCore.BindingMapper;
 using MvvmLightCore.Bindings;
 
 namespace MvvmLightCore
 {
     public class MvvmBinder : IMvvmBinder
     {
-        private readonly IBindingManager _bindingManager;
+        private readonly IBindingMap _bindingMap;
         private readonly ILogger<MvvmBinder> _logger;
         private bool _isDisposeInvoked = false;
         private bool _isAsyncDisposeInvoked = false;
 
         public event PropertyChangedEventHandler? ViewModelPropertyChanged;
+        public event CollectionChangeEventHandler? OnCollectionChanged;
 
-        public MvvmBinder(IBindingManager bindingManager, ILogger<MvvmBinder> logger)
+        public MvvmBinder(IBindingMap bindingMap, ILogger<MvvmBinder> logger)
         {
-            this._bindingManager = bindingManager;
+            this._bindingMap = bindingMap;
             _logger = logger;
         }
 
@@ -27,29 +29,47 @@ namespace MvvmLightCore
             Dispose(true);
         }
 
-        public TValue Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
+        /// <summary>
+        /// This method is exposed to External UI/Class to providing 2 way binding support.
+        /// </summary>
+        /// <param name="viewmodel"></param>
+        /// <param name="bindingExpression"></param>
+        /// <typeparam name="TInput"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NullReferenceException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        public TValue Bind<TInput, TValue>(INotifyPropertyChanged viewmodel,
+            Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
         {
-            var bindableProperty = ParseBindingExpression(bindingExpression) ?? throw new NullReferenceException("Can't find PropertyName");
+            var bindableProperty = ParseBindingExpression(bindingExpression) ??
+                                   throw new NullReferenceException("Can't find PropertyName");
             var bindableObj = new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel));
-            if (!this._bindingManager.CheckIfBindingAlreadyExist(bindableObj))
+            if (!this._bindingMap.CheckIfBindingAlreadyExist(bindableObj))
             {
                 viewmodel.PropertyChanged -= this.ViewModelPropertyChanged;
                 viewmodel.PropertyChanged += this.ViewModelPropertyChanged;
-                this._bindingManager.AddBinding(bindableObj);
+
+                //todo: Add binding for collection changed as well.
+                this._bindingMap.AddBinding(bindableObj);
             }
-            return (TValue)(bindableProperty.GetValue(viewmodel) ?? 
-                    throw new InvalidOperationException("Can't GetValue from ViewModel"));
+
+            return (TValue)(bindableProperty.GetValue(viewmodel) ??
+                            throw new InvalidOperationException("Can't GetValue from ViewModel"));
         }
 
-        private PropertyInfo? ParseBindingExpression<TInput, TValue>(Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
+        private PropertyInfo? ParseBindingExpression<TInput, TValue>(Expression<Func<TInput, TValue>> bindingExpression)
+            where TInput : INotifyPropertyChanged
         {
-            if (bindingExpression.NodeType == ExpressionType.Lambda && bindingExpression.Body is MemberExpression && (bindingExpression.Body as MemberExpression).Member is PropertyInfo)
+            if (bindingExpression.NodeType == ExpressionType.Lambda && bindingExpression.Body is MemberExpression &&
+                (bindingExpression.Body as MemberExpression).Member is PropertyInfo)
             {
                 return (bindingExpression?.Body as MemberExpression)?.Member as PropertyInfo;
             }
+
             throw new NotSupportedException();
         }
-    
+
         protected virtual async ValueTask DisposeAsyncCore()
         {
             if (_isAsyncDisposeInvoked)
@@ -57,7 +77,7 @@ namespace MvvmLightCore
             _isAsyncDisposeInvoked = true;
             //Dispose objects asynchronously thus after this call no need to reclear the managed objects.
         }
-        
+
         /// <summary>
         /// This will cleanup any managed objects.
         /// </summary>
@@ -72,13 +92,14 @@ namespace MvvmLightCore
 
             if (!isInvokedFromGCFinalizer)
             {
-             //Free managed resources if any.
+                //Free managed resources if any.
             }
+
             //Free unmanaged resources if any.
             _isDisposeInvoked = true;
             Dispose();
         }
-        
+
         public void Dispose()
         {
             Dispose(false);

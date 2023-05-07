@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32210.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvvmLightCore", "MvvmLightCore\MvvmLightCore.csproj", "{1CDCA43F-7565-4C41-8380-AA973100BB4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvvmBindingLightCore", "MvvmBindingLightCore\MvvmBindingLightCore.csproj", "{1CDCA43F-7565-4C41-8380-AA973100BB4E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvvmLightBlazorComponent", "MvvmLightBlazorComponent\MvvmLightBlazorComponent.csproj", "{53C5E97C-8B87-4578-B671-96F63DE6F374}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorComponentExtension", "BlazorComponentExtension\BlazorComponentExtension.csproj", "{53C5E97C-8B87-4578-B671-96F63DE6F374}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleProject", "SampleProject\SampleProject.csproj", "{80BB3983-F2AF-46AB-9C84-089BF9854B8A}"
 EndProject

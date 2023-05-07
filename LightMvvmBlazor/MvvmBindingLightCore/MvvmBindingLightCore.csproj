@@ -9,6 +9,7 @@
     <Copyright>MIT</Copyright>
     <RepositoryUrl>https://github.com/deveshbahuguna/LightMvvmBlazor</RepositoryUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <RootNamespace>MvvmLightCore</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components">
+      <HintPath>..\..\..\.nuget\packages\microsoft.aspnetcore.components\6.0.2\lib\net6.0\Microsoft.AspNetCore.Components.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions">
       <HintPath>..\..\..\.nuget\packages\microsoft.extensions.logging.abstractions\6.0.0\lib\net6.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>

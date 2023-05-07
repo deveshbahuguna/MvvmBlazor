@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MvvmLightBlazorComponent\MvvmLightBlazorComponent.csproj" />
+    <ProjectReference Include="..\BlazorComponentExtension\BlazorComponentExtension.csproj" />
     <ProjectReference Include="..\SampleViewModel\SampleViewModel.csproj" />
   </ItemGroup>
 

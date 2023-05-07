@@ -1,29 +1,29 @@
 ﻿using System.Reflection;
+using MvvmLightCore.Binder;
 using MvvmLightCore.Exceptions;
 
-namespace MvvmLightCore.Binder
+namespace MvvmLightCore.BindingMapper
 {
-    public class BindingManager : IBindingManager
+    public class BindingMap : IBindingMap
     {
         /// <summary>
         /// Mapping of VM with object id and object VM with corresponding property.
         /// </summary>
-        private readonly Dictionary<int, List<IBindableObject>> _objIdBindableObjMap;
+        private readonly Dictionary<int, List<BindableObject>> _objIdBindableObjMap;
 
-        public BindingManager()
+        public BindingMap()
         {
-            _objIdBindableObjMap = new Dictionary<int, List<IBindableObject>>();
+            _objIdBindableObjMap = new Dictionary<int, List<BindableObject>>();
         }
 
-        public void AddBinding(IBindableObject toAddBindingObj)
+        public void AddBinding(BindableObject toAddBindingObj)
         {
             if (toAddBindingObj.Property == null) throw new NullBindPropertyFound(toAddBindingObj);
             if (toAddBindingObj.ViewModel == null) throw new ViewModelObjNotFoundException(toAddBindingObj);
             if (!_objIdBindableObjMap.ContainsKey(toAddBindingObj.GetHashcode))
             {
                 var bindingObj = new BindableObject(toAddBindingObj.ViewModel);
-                _objIdBindableObjMap.Add(toAddBindingObj.GetHashcode, new List<IBindableObject>());
-                bindingObj.Properties.Add(toAddBindingObj.Property);
+                _objIdBindableObjMap.Add(toAddBindingObj.GetHashcode, new List<BindableObject>());
                 _objIdBindableObjMap[toAddBindingObj.GetHashcode].Add(bindingObj);
             }
             else
@@ -36,21 +36,22 @@ namespace MvvmLightCore.Binder
                 else
                 {
                     //Update the prop info in the view model.
-                    var vm = _objIdBindableObjMap[toAddBindingObj.GetHashcode]
-                        .Where(obj.CheckIfBindingKeyAreSame(toAddBindingObj) select obj).First();
-                    vm.Properties.Add(toAddBindingObj.Properties.First());
+                    var existingViewModel = _objIdBindableObjMap[toAddBindingObj.GetHashcode]
+                        .Where(x=>x.CheckIfBindingKeyAreSame(toAddBindingObj)).FirstOrDefault();
+                    existingViewModel.Property = toAddBindingObj.Property;
                 }
             }
         }
 
-        public bool CheckIfBindingAlreadyExist(IBindableObject toFindBindObject)
+        public bool CheckIfBindingAlreadyExist(BindableObject toFindBindObject)
         {
+            // Below checks for objects having same id as well as same object if id are same.
             return this._objIdBindableObjMap.ContainsKey(toFindBindObject.GetHashcode) &&
                    this._objIdBindableObjMap[toFindBindObject.GetHashcode]
-                       .Any(obj => obj.CheckIfBindingAlreadyExist(toFindBindObject));
+                       .Any(obj => obj.Equals(toFindBindObject));
         }
 
-        public void RemoveBinding(IBindableObject IBindableObject)
+        public void RemoveBinding(BindableObject IBindableObject)
         {
             //todo:db Will do later.
             //if (IBindableObject.ViewModel != null && propVmMapping.ContainsKey(IBindableObject.ViewModel)
@@ -63,30 +64,13 @@ namespace MvvmLightCore.Binder
             //    }
             //}
         }
-
-        public PropertyInfo? GetBindableProperty(IBindableObject IBindableObject)
-        {
-            if (CheckIfBindingAlreadyExist(IBindableObject))
-            {
-                var bindableObj = (from ele in this._objIdBindableObjMap[IBindableObject.GetHashcode]
-                    where ele.CheckIfBindingKeyAreSame(IBindableObject)
-                    select ele).First();
-                if (bindableObj.Properties.TryGetValue(bindableObj.Properties.First(), out PropertyInfo? propertyInfo))
-                {
-                    return propertyInfo;
-                }
-            }
-
-            throw new KeyNotFoundException($"Bindable object does not exist " + " Property " +
-                                           IBindableObject?.Properties?.First()?.Name);
-        }
     }
 
     public class NullBindPropertyFound : Exception
     {
-        private readonly IBindableObject _toAddBindingObj;
+        private readonly BindableObject _toAddBindingObj;
 
-        public NullBindPropertyFound(IBindableObject toAddBindingObj) : base(
+        public NullBindPropertyFound(BindableObject toAddBindingObj) : base(
             message: $"Property of Bindable object  is null")
 
         {

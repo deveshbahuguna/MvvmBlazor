@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MvvmLightCore.Binder
 {
-    public class BindableObject : IBindableObject
+    public class BindableObject : IEquatable<BindableObject>
     {
         public BindableObject(WeakReference<INotifyPropertyChanged> viewModel)
         {
@@ -16,7 +11,7 @@ namespace MvvmLightCore.Binder
         }
 
         public WeakReference<INotifyPropertyChanged> ViewModel { get; set; }
-        public bool CheckIfBindingKeyAreSame(IBindableObject toCheckObject)
+        public bool CheckIfBindingKeyAreSame(BindableObject toCheckObject)
         {
             if (toCheckObject.ViewModel != null && toCheckObject.ViewModel.TryGetTarget(out INotifyPropertyChanged? keyObject)
              && this.ViewModel != null &&  this.ViewModel.TryGetTarget(out INotifyPropertyChanged? currentObjectVM))
@@ -26,9 +21,9 @@ namespace MvvmLightCore.Binder
             return false;
         }
 
-        public bool CheckIfBindingAlreadyExist(IBindableObject toCheckObject)
+        public bool CheckIfBindingAlreadyExist(BindableObject toCheckObject)
         {
-            return CheckIfBindingKeyAreSame(toCheckObject) && Property.Contains(to);
+            return CheckIfBindingKeyAreSame(toCheckObject) && Property.Equals(toCheckObject.Property);
         }
 
         public int GetHashcode
@@ -45,5 +40,10 @@ namespace MvvmLightCore.Binder
         }
 
         public PropertyInfo Property { get; set; }
+        public bool Equals(BindableObject? other)
+        {
+            if (other == null) return false;
+           return CheckIfBindingAlreadyExist(other);
+        }
     }
 }
