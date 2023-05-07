@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MvvmLightCore.Registry
 {
-    public static class MvvmLightCoreDIRegistry
+    public static class MvvmLightCoreDiRegistry
     {
         public static void AddMvvm(this IServiceCollection serviceProvider)
         {
