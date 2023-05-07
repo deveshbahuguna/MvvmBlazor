@@ -27,18 +27,18 @@ namespace MvvmLightCore
             Dispose(true);
         }
 
-        public TValue? Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
+        public TValue Bind<TInput, TValue>(INotifyPropertyChanged viewmodel, Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged
         {
-            var bindableProperty = ParseBindingExpression(bindingExpression);
-            IBindableObject bindableObj = new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel));
-            bindableObj.Properties.Add(bindableProperty);
+            var bindableProperty = ParseBindingExpression(bindingExpression) ?? throw new NullReferenceException("Can't find PropertyName");
+            var bindableObj = new BindableObject(new WeakReference<INotifyPropertyChanged>(viewmodel));
             if (!this._bindingManager.CheckIfBindingAlreadyExist(bindableObj))
             {
                 viewmodel.PropertyChanged -= this.ViewModelPropertyChanged;
                 viewmodel.PropertyChanged += this.ViewModelPropertyChanged;
                 this._bindingManager.AddBinding(bindableObj);
             }
-            return (TValue)bindableProperty?.GetValue(viewmodel);
+            return (TValue)(bindableProperty.GetValue(viewmodel) ?? 
+                    throw new InvalidOperationException("Can't GetValue from ViewModel"));
         }
 
         private PropertyInfo? ParseBindingExpression<TInput, TValue>(Expression<Func<TInput, TValue>> bindingExpression) where TInput : INotifyPropertyChanged

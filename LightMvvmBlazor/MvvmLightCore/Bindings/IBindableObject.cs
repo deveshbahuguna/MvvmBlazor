@@ -7,7 +7,7 @@ namespace MvvmLightCore.Binder
     {
         int GetHashcode { get; }
         PropertyInfo Property { get; set; }
-        WeakReference<INotifyPropertyChanged>? ViewModel { get; set; }
+        WeakReference<INotifyPropertyChanged> ViewModel { get; set; }
         bool CheckIfBindingKeyAreSame(IBindableObject toCheckObject);
         bool CheckIfBindingAlreadyExist(IBindableObject toCheckObject);  
 

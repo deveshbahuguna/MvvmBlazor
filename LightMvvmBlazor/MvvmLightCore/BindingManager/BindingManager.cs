@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using MvvmLightCore.Exceptions;
 
 namespace MvvmLightCore.Binder
@@ -14,23 +8,23 @@ namespace MvvmLightCore.Binder
         /// <summary>
         /// Mapping of VM with object id and object VM with corresponding property.
         /// </summary>
-        private readonly Dictionary<int, List<IBindableObject>> propVmMapping;
+        private readonly Dictionary<int, List<IBindableObject>> _objIdBindableObjMap;
 
         public BindingManager()
         {
-            propVmMapping = new Dictionary<int, List<IBindableObject>>();
+            _objIdBindableObjMap = new Dictionary<int, List<IBindableObject>>();
         }
 
         public void AddBinding(IBindableObject toAddBindingObj)
         {
             if (toAddBindingObj.Property == null) throw new NullBindPropertyFound(toAddBindingObj);
             if (toAddBindingObj.ViewModel == null) throw new ViewModelObjNotFoundException(toAddBindingObj);
-            if (!propVmMapping.ContainsKey(toAddBindingObj.GetHashcode))
+            if (!_objIdBindableObjMap.ContainsKey(toAddBindingObj.GetHashcode))
             {
-                var IBindableObject = new BindableObject(toAddBindingObj.ViewModel);
-                propVmMapping.Add(toAddBindingObj.GetHashcode, new List<IBindableObject>());
-                IBindableObject.Properties.Add(toAddBindingObj.Property);
-                propVmMapping[toAddBindingObj.GetHashcode].Add(IBindableObject);
+                var bindingObj = new BindableObject(toAddBindingObj.ViewModel);
+                _objIdBindableObjMap.Add(toAddBindingObj.GetHashcode, new List<IBindableObject>());
+                bindingObj.Properties.Add(toAddBindingObj.Property);
+                _objIdBindableObjMap[toAddBindingObj.GetHashcode].Add(bindingObj);
             }
             else
             {
@@ -42,7 +36,7 @@ namespace MvvmLightCore.Binder
                 else
                 {
                     //Update the prop info in the view model.
-                    var vm = propVmMapping[toAddBindingObj.GetHashcode]
+                    var vm = _objIdBindableObjMap[toAddBindingObj.GetHashcode]
                         .Where(obj.CheckIfBindingKeyAreSame(toAddBindingObj) select obj).First();
                     vm.Properties.Add(toAddBindingObj.Properties.First());
                 }
@@ -51,8 +45,8 @@ namespace MvvmLightCore.Binder
 
         public bool CheckIfBindingAlreadyExist(IBindableObject toFindBindObject)
         {
-            return this.propVmMapping.ContainsKey(toFindBindObject.GetHashcode) &&
-                   this.propVmMapping[toFindBindObject.GetHashcode]
+            return this._objIdBindableObjMap.ContainsKey(toFindBindObject.GetHashcode) &&
+                   this._objIdBindableObjMap[toFindBindObject.GetHashcode]
                        .Any(obj => obj.CheckIfBindingAlreadyExist(toFindBindObject));
         }
 
@@ -74,7 +68,7 @@ namespace MvvmLightCore.Binder
         {
             if (CheckIfBindingAlreadyExist(IBindableObject))
             {
-                var bindableObj = (from ele in this.propVmMapping[IBindableObject.GetHashcode]
+                var bindableObj = (from ele in this._objIdBindableObjMap[IBindableObject.GetHashcode]
                     where ele.CheckIfBindingKeyAreSame(IBindableObject)
                     select ele).First();
                 if (bindableObj.Properties.TryGetValue(bindableObj.Properties.First(), out PropertyInfo? propertyInfo))

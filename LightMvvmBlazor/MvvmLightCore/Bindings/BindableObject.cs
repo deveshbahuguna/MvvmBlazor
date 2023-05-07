@@ -10,14 +10,12 @@ namespace MvvmLightCore.Binder
 {
     public class BindableObject : IBindableObject
     {
-        public BindableObject(WeakReference<INotifyPropertyChanged>? viewModel)
+        public BindableObject(WeakReference<INotifyPropertyChanged> viewModel)
         {
             ViewModel = viewModel;
         }
 
-        public WeakReference<INotifyPropertyChanged>? ViewModel { get; set; }
-        public HashSet<PropertyInfo?> Properties { get; set; } = new();
-
+        public WeakReference<INotifyPropertyChanged> ViewModel { get; set; }
         public bool CheckIfBindingKeyAreSame(IBindableObject toCheckObject)
         {
             if (toCheckObject.ViewModel != null && toCheckObject.ViewModel.TryGetTarget(out INotifyPropertyChanged? keyObject)
@@ -30,7 +28,7 @@ namespace MvvmLightCore.Binder
 
         public bool CheckIfBindingAlreadyExist(IBindableObject toCheckObject)
         {
-            return CheckIfBindingKeyAreSame(toCheckObject) && this.Properties.Contains(toCheckObject.Properties.First());
+            return CheckIfBindingKeyAreSame(toCheckObject) && Property.Contains(to);
         }
 
         public int GetHashcode
@@ -45,5 +43,7 @@ namespace MvvmLightCore.Binder
                 return -1;
             }
         }
+
+        public PropertyInfo Property { get; set; }
     }
 }
